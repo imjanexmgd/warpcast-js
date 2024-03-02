@@ -96,8 +96,8 @@ const processPerThread = async (
                id.substring(0, 10),
                items[key].cast.author.username
             );
-            i++;
          }
+         i++;
       }
 
       // return;
