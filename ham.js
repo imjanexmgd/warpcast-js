@@ -67,6 +67,7 @@ const processPerThread = async (
       const selectedUser = listed.find((item) => item.username === selected);
       const { token, username } = selectedUser;
       let feed;
+      let i = 1;
       feed = await getFeed(token);
       if (feed.result.items.length == 0) {
          loggerInfo('No feed again');
@@ -80,6 +81,7 @@ const processPerThread = async (
       }
       timestamp = feed.result.latestMainCastTimestamp;
       for (const key in feed.result.items) {
+         loggerInfo(`PROGRESS [${i} / ${feed.result.items.length}]`);
          const { items } = feed.result;
          const { id } = items[key];
          idHash = id.substring(2, 10);
@@ -94,11 +96,13 @@ const processPerThread = async (
                id.substring(0, 10),
                items[key].cast.author.username
             );
-            break;
+            i++;
          }
       }
+
       // return;
       while (true) {
+         i = 0;
          feed = await getFeed(listed[0].token, timestamp, excludeitem);
          if (feed.result.items.length == 0) {
             console.log('no feed');
@@ -106,6 +110,7 @@ const processPerThread = async (
          }
          timestamp = feed.result.latestMainCastTimestamp;
          for (const key in feed.result.items) {
+            loggerInfo(`PROGRESS [${i} / ${feed.result.items.length}]`);
             const { items } = feed.result;
             const { id } = items[key];
             idHash = id.substring(2, 10);
@@ -122,6 +127,7 @@ const processPerThread = async (
                   items[key].cast.author.username
                );
             }
+            i++;
          }
       }
       loggerSuccess(`Process done`);
