@@ -35,8 +35,7 @@ const getThread = async (cursor) => {
                'Accept-Encoding': 'gzip, deflate, br',
                Referer: 'https://warpcast.com/',
                'Content-Type': 'application/json; charset=utf-8',
-               Authorization:
-                  'Bearer MK-o8YusyvW3Y6L0jNcPJC9HxSmKHJoR4CclEn10CAKzdbD7csnMYutdkQR2Wd7td4a/4LoiDONbdJxiCNh5DRqlA==',
+               Authorization: '',
             },
          }
       );
@@ -71,8 +70,7 @@ const replying = async (hash) => {
                'Accept-Encoding': 'gzip, deflate, br',
                Referer: 'https://warpcast.com/',
                'Content-Type': 'application/json; charset=utf-8',
-               Authorization:
-                  'Bearer MK-o8YusyvW3Y6L0jNcPJC9HxSmKHJoR4CclEn10CAKzdbD7csnMYutdkQR2Wd7td4a/4LoiDONbdJxiCNh5DRqlA==',
+               Authorization: '',
             },
          }
       );
