@@ -1,80 +1,55 @@
-import inquirer from 'inquirer';
 import fs from 'fs';
-import axios from 'axios';
+import inquirer from 'inquirer';
+import getFeed from './src/func/getFeed.js';
+import { loggerInfo, loggerSuccess } from './src/utils/logger.js';
+import replyingCast from './src/func/replyingCast.js';
+import getThread from './src/func/getThread.js';
+import delay from './src/utils/delay.js';
 import sendNotifTele from './sendTelegram.js';
-import delay from './src/delay.js';
-import { loggerInfo, loggerSuccess } from './src/logger.js';
 const jsonList = fs.readFileSync('acc.json');
 const listed = JSON.parse(jsonList);
-
-const getThread = async (token, cursor) => {
+const ms = 60000;
+const processPerThread = async (
+   username,
+   token,
+   Fullhash,
+   castHashPrefix,
+   usernametarg
+) => {
    try {
-      let params;
-      if (!cursor) {
-         params = new URLSearchParams({
-            castHashPrefix: '0x237df661',
-            username: 'deployer',
-            limit: '100',
-         });
-      } else {
-         params = new URLSearchParams({
-            castHashPrefix: '0x237df661',
-            username: 'deployer',
-            limit: '100',
-            cursor: `${cursor}`,
-         });
+      let thread = await getThread(token, castHashPrefix, usernametarg);
+      let listCast = [];
+      listCast.push(...thread.result.casts);
+      if (thread.next) {
+         while (true) {
+            thread = await getThread(
+               token,
+               castHashPrefix,
+               usernametarg,
+               thread.next.cursor
+            );
+            loggerInfo(`push ${thread.result.casts.length} cast to listcast`);
+            const { casts } = thread.result;
+            for (const key in casts) {
+               listCast.push(casts[key]);
+            }
+            if (thread.next) {
+               loggerInfo(`Next cursor`);
+            } else {
+               loggerInfo(`No cursor, scraping stopped`);
+               break;
+            }
+         }
       }
-      const response = await axios.get(
-         `https://client.warpcast.com/v2/user-thread-casts?${params}`,
-         {
-            headers: {
-               'User-Agent':
-                  'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
-               Accept: '*/*',
-               'Accept-Language': 'en-US,en;q=0.5',
-               'Accept-Encoding': 'gzip, deflate, br',
-               Referer: 'https://warpcast.com/',
-               'Content-Type': 'application/json; charset=utf-8',
-               Authorization: token,
-            },
-         }
-      );
-      //    console.log(response.data.result.casts[2].replies.casts[0]);
-      return response.data;
-   } catch (error) {
-      console.log(error.request.data);
-      throw error;
-   }
-};
-const getRandomMeatAmount = () => {
-   return Math.floor(Math.random() * 10) + 1;
-};
-const replying = async (token, hash) => {
-   try {
-      const response = await axios.post(
-         'https://client.warpcast.com/v2/casts',
-         {
-            text: '🍖'.repeat(getRandomMeatAmount()),
-            parent: {
-               hash: hash,
-            },
-            embeds: [],
-         },
-         {
-            headers: {
-               'User-Agent':
-                  'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
-               Accept: '*/*',
-               'Accept-Language': 'en-US,en;q=0.5',
-               'Accept-Encoding': 'gzip, deflate, br',
-               Referer: 'https://warpcast.com/',
-               'Content-Type': 'application/json; charset=utf-8',
-               Authorization: token,
-            },
-         }
-      );
-      // console.log(response.data.result);
-      return response.data;
+      const checkIfreply = listCast.map((cast) => {
+         cast.author.username === username;
+      });
+      if (checkIfreply.length == 0) {
+         loggerInfo(`Skipping Reply ${listCast[0].hash} because already reply`);
+      } else {
+         await replyingCast(token, Fullhash);
+         await delay(ms);
+      }
    } catch (error) {
       throw error;
    }
@@ -91,89 +66,70 @@ const replying = async (token, hash) => {
       });
       const selectedUser = listed.find((item) => item.username === selected);
       const { token, username } = selectedUser;
-      loggerInfo(`Username : ${username}`);
-      loggerInfo(`Authorization : ${token}`);
-      let thread = await getThread(token, null);
-      let listCast = [];
-      listCast.push(...thread.result.casts);
-      if (thread.next) {
-         while (true) {
-            thread = await getThread(token, thread.next.cursor);
-            loggerInfo(`push ${thread.result.casts.length} cast to listcast`);
-            const { casts } = thread.result;
-            for (const key in casts) {
-               listCast.push(casts[key]);
-            }
-            if (thread.next) {
-               loggerInfo(`Next cursor`);
-            } else {
-               loggerInfo(`No cursor, scraping stopped`);
-               break;
-            }
-         }
+      let feed;
+      feed = await getFeed(token);
+      if (feed.result.items.length == 0) {
+         loggerInfo('No feed again');
+         return;
       }
-      loggerSuccess(`Success get ${listCast.length} cast`);
-      await sendNotifTele(`Success get ${listCast.length} cast`);
-      let i = 1;
-      for (const key in listCast) {
-         if (listCast[key].parentHash) {
-            if (listCast[key].author.username == username) {
-               loggerInfo(
-                  `skipping because it your own cast [${i}] / [${listCast.length}]`
-               );
-            } else {
-               if (listCast[key].replies.casts.length > 0) {
-                  const replyingCast = listCast[key].replies.casts;
-                  const filteredArray = replyingCast.filter(
-                     (cast) => cast.author.username === username
-                  );
-                  if (filteredArray.length > 0) {
-                     loggerInfo(
-                        `skipping replying because ur already replying [${i}] / [${listCast.length}]`
-                     );
-                  } else {
-                     const reply = await replying(token, listCast[key].hash);
-                     const json = {
-                        hash: reply.result.cast.hash,
-                        timestamp: reply.result.cast.timestamp,
-                        text: reply.result.cast.text,
-                     };
-                     console.log(json);
-                     loggerSuccess(
-                        `SEND Reply ${json.text} with hash ${json.hash} [${i}] / [${listCast.length}]`
-                     );
-                     await sendNotifTele(
-                        `SEND Reply ${json.text} with hash ${json.hash} [${i}] / [${listCast.length}]`
-                     );
-                     await delay(30000);
-                  }
-               } else {
-                  const reply = await replying(token, listCast[key].hash);
-                  const json = {
-                     hash: reply.result.cast.hash,
-                     timestamp: reply.result.cast.timestamp,
-                     text: reply.result.cast.text,
-                  };
-                  console.log(json);
-                  loggerSuccess(
-                     `SEND Reply ${json.text} with hash ${json.hash} [${i}] / [${listCast.length}]`
-                  );
-                  await sendNotifTele(
-                     `SEND Reply ${json.text} with hash ${json.hash} [${i}] / [${listCast.length}]`
-                  );
-                  await delay(30000);
-               }
-            }
+      let excludeitem = [];
+      let idHash;
+      let timestamp;
+      if (feed.result.items.length == 0) {
+         return console.log('No feed');
+      }
+      timestamp = feed.result.latestMainCastTimestamp;
+      for (const key in feed.result.items) {
+         const { items } = feed.result;
+         const { id } = items[key];
+         idHash = id.substring(2, 10);
+         excludeitem.push(idHash);
+         if (items[key].pinned) {
+            loggerInfo(`skipping hash ${id}, because its is pinned`);
          } else {
-            loggerInfo(
-               `Skipping because not have parent [${i}] / [${listCast.length}]`
+            await processPerThread(
+               username,
+               listed[0].token,
+               id,
+               id.substring(0, 10),
+               items[key].cast.author.username
             );
+            break;
          }
-         i++;
       }
-      await sendNotifTele(`Process done`);
+      // return;
+      while (true) {
+         feed = await getFeed(listed[0].token, timestamp, excludeitem);
+         if (feed.result.items.length == 0) {
+            console.log('no feed');
+            break;
+         }
+         timestamp = feed.result.latestMainCastTimestamp;
+         for (const key in feed.result.items) {
+            const { items } = feed.result;
+            const { id } = items[key];
+            idHash = id.substring(2, 10);
+            excludeitem.push(idHash);
+            if (items[key].pinned) {
+               console.log(`skipping hash ${id}, because its is pinned`);
+            } else {
+               const { username } = items[key].cast.author;
+               await processPerThread(
+                  username,
+                  listed[0].token,
+                  id,
+                  id.substring(0, 10),
+                  items[key].cast.author.username
+               );
+            }
+         }
+      }
+      loggerSuccess(`Process done`);
+      await sendNotifTele('Process done');
+      return;
    } catch (error) {
-      await sendNotifTele(`Process closed, ${error.message}`);
       console.log(error);
+      await sendNotifTele('Process closed because error');
+      return;
    }
 })();

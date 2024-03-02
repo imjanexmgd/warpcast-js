@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { loggerFailed, loggerInfo, loggerSuccess } from './src/logger.js';
+import { loggerFailed, loggerInfo, loggerSuccess } from './src/utils/logger.js';
 import dotenv from 'dotenv';
-import delay from './src/delay.js';
+import delay from './src/utils/delay.js';
 dotenv.config();
 const sendNotifTele = async (text) => {
    const maxRetries = 3;

@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { loggerInfo, loggerSuccess } from './src/logger.js';
-import delay from './src/delay.js';
+import { loggerInfo, loggerSuccess } from './src/utils/logger.js';
+import delay from './src/utils/delay.js';
 import sendNotifTele from './sendTelegram.js';
 import fs from 'fs';
 import path from 'path';
