@@ -8,8 +8,6 @@ const sendNotifTele = async (text) => {
    let retryCount = 0;
    const BOT_TOKEN = process.env.BOT_TOKEN;
    const CHANNEL_CHAT_ID = process.env.CHANNEL_CHAT_ID;
-   console.log('test send notif');
-   return;
    while (retryCount < maxRetries) {
       try {
          await axios.post(
