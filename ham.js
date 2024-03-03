@@ -41,7 +41,6 @@ const processPerThread = async (
             }
          }
       }
-      console.log(listCast);
       const filteredArray = listCast.filter(
          (cast) => cast.author.username === username
       );

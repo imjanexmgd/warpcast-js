@@ -3,7 +3,17 @@ import { loggerSuccess, loggerFailed } from '../utils/logger.js';
 const randomText = () => {
    try {
       //    return '🍖'.repeat(Math.floor(Math.random() * 20) + 1);
-      return `🍖x${Math.floor(Math.random() * (1000 - 10 + 1)) + 10}`;
+      // return `🍖x${Math.floor(Math.random() * (1000 - 10 + 1)) + 10}`;
+      const rand = Math.floor(Math.random() * 3 + 1);
+      if (rand == 1) {
+         return '🍖'.repeat(Math.floor(Math.random() * 10) + 1);
+      }
+      if (rand == 2) {
+         return `🍖x${Math.floor(Math.random() * (1000 - 10 + 1)) + 10}`;
+      }
+      if (rand == 3) {
+         return `🍖x${Math.floor(Math.random() * 10) + 1}`;
+      }
    } catch (error) {
       throw error;
    }
