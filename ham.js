@@ -41,18 +41,19 @@ const processPerThread = async (
             }
          }
       }
-      const filteredArray = listCast.filter(
-         (cast) => cast.author.username === username
-      );
+      const filteredArray = listCast.filter((cast) => {
+         cast.author.username === username;
+      });
       if (filteredArray.length > 0) {
          loggerInfo(`Skipping Reply ${listCast[0].hash} because already reply`);
       } else {
          try {
+            loggerInfo(`Replying ${Fullhash}`);
             await replyingCast(token, Fullhash);
+            await delay(ms);
          } catch (error) {
             loggerFailed(`Failed replying ${Fullhash}, ${error.message}`);
          }
-         await delay(ms);
       }
    } catch (error) {
       throw error;
@@ -103,11 +104,13 @@ const processPerThread = async (
             );
          }
          i++;
+         loggerInfo('stopping thread');
       }
 
       // return;
       while (true) {
-         i = 0;
+         i = 1;
+         loggerInfo('Starting fetch again');
          feed = await getFeed(listed[0].token, timestamp, excludeitem);
          if (feed.result.items.length == 0) {
             console.log('no feed');
