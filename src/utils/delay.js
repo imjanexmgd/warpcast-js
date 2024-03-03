@@ -9,7 +9,7 @@ export const loadingAnimation = (totaltime) => {
       let elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       let current = totaltime - elapsedTime;
       process.stdout.write(
-         chalk.italic(
+         chalk.white(
             `waiting delay ${current} second ${chalk.red(
                `${frameLoading[frameIndex]}`
             )}`
