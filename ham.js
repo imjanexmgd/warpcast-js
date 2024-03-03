@@ -72,49 +72,20 @@ const processPerThread = async (
       });
       const selectedUser = listed.find((item) => item.username === selected);
       const { token, username } = selectedUser;
-      let feed;
-      let i = 1;
-      feed = await getFeed(token);
-      if (feed.result.items.length == 0) {
-         loggerInfo('No feed again');
-         return;
-      }
-      let excludeitem = [];
-      let idHash;
-      let timestamp;
-      if (feed.result.items.length == 0) {
-         return console.log('No feed');
-      }
-      timestamp = feed.result.latestMainCastTimestamp;
-      for (const key in feed.result.items) {
-         loggerInfo(`PROGRESS [${i} / ${feed.result.items.length}]`);
-         const { items } = feed.result;
-         const { id } = items[key];
-         idHash = id.substring(2, 10);
-         excludeitem.push(idHash);
-         if (items[key].pinned) {
-            loggerInfo(`skipping hash ${id}, because its is pinned`);
-         } else {
-            await processPerThread(
-               username,
-               token,
-               id,
-               id.substring(0, 10),
-               items[key].cast.author.username
-            );
-         }
-         i++;
-         loggerInfo('stopping thread');
-      }
-
-      // return;
+      let totalLooping = 1;
       while (true) {
-         i = 1;
-         loggerInfo('Starting fetch again');
-         feed = await getFeed(listed[0].token, timestamp, excludeitem);
+         let feed;
+         let i = 1;
+         feed = await getFeed(token);
          if (feed.result.items.length == 0) {
-            console.log('no feed');
-            break;
+            loggerInfo('No feed again');
+            return;
+         }
+         let excludeitem = [];
+         let idHash;
+         let timestamp;
+         if (feed.result.items.length == 0) {
+            return console.log('No feed');
          }
          timestamp = feed.result.latestMainCastTimestamp;
          for (const key in feed.result.items) {
@@ -124,9 +95,8 @@ const processPerThread = async (
             idHash = id.substring(2, 10);
             excludeitem.push(idHash);
             if (items[key].pinned) {
-               console.log(`skipping hash ${id}, because its is pinned`);
+               loggerInfo(`skipping hash ${id}, because its is pinned`);
             } else {
-               const { username } = items[key].cast.author;
                await processPerThread(
                   username,
                   token,
@@ -136,11 +106,51 @@ const processPerThread = async (
                );
             }
             i++;
+            loggerInfo('stopping thread');
          }
+         while (true) {
+            i = 1;
+            loggerInfo('Starting fetch again');
+            feed = await getFeed(listed[0].token, timestamp, excludeitem);
+            if (feed.result.items.length == 0) {
+               console.log('no feed');
+               break;
+            }
+            timestamp = feed.result.latestMainCastTimestamp;
+            for (const key in feed.result.items) {
+               loggerInfo(`PROGRESS [${i} / ${feed.result.items.length}]`);
+               const { items } = feed.result;
+               const { id } = items[key];
+               idHash = id.substring(2, 10);
+               excludeitem.push(idHash);
+               if (items[key].pinned) {
+                  console.log(`skipping hash ${id}, because its is pinned`);
+               } else {
+                  const { username } = items[key].cast.author;
+                  await processPerThread(
+                     username,
+                     token,
+                     id,
+                     id.substring(0, 10),
+                     items[key].cast.author.username
+                  );
+               }
+               i++;
+            }
+         }
+
+         loggerSuccess(`Process done looping= ${totalLooping}`);
+         await sendNotifTele(`Process done looping channel ${totalLooping}`);
+         delay(1800000);
+         if (totalLooping == 3) {
+            break;
+         }
+         totalLooping++;
+         continue;
       }
-      loggerSuccess(`Process done`);
-      await sendNotifTele('Process done');
-      return;
+      await sendNotifTele(
+         'Process done with total looping channel = ' + totalLooping
+      );
    } catch (error) {
       console.log(error);
       await sendNotifTele('Process closed because error');

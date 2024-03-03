@@ -1,8 +1,33 @@
-import { loggerInfo } from './logger.js';
+import chalk from 'chalk';
+export const loadingAnimation = (totaltime) => {
+   const frameLoading = ['', '読', '読み', '読み込', '読み込み', '読み込み中'];
+   let frameIndex = 0;
+   let startTime = Date.now();
+   return setInterval(() => {
+      process.stdout.clearLine();
+      process.stdout.cursorTo(0);
+      let elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+      let current = totaltime - elapsedTime;
+      process.stdout.write(
+         chalk.italic(
+            `waiting delay ${current} second ${chalk.red(
+               `${frameLoading[frameIndex]}`
+            )}`
+         )
+      );
+      frameIndex = (frameIndex + 1) % frameLoading.length;
+   }, 100);
+};
 const delay = async (ms) => {
-   loggerInfo(`Waiting for delay ${ms}`);
+   let remainingSeconds = ms / 1000;
+   let loading = loadingAnimation(remainingSeconds);
    await new Promise((resolve) => {
-      setTimeout(resolve, ms);
+      setTimeout(() => {
+         clearInterval(loading);
+         resolve();
+      }, ms);
    });
+   process.stdout.clearLine();
+   process.stdout.cursorTo(0);
 };
 export default delay;

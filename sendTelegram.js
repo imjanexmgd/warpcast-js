@@ -36,8 +36,7 @@ const sendNotifTele = async (text) => {
             loggerFailed('Max retries reached. Unable to send notification.');
             throw error;
          }
-
-         await new Promise((resolve) => setTimeout(resolve, 1000));
+         await new Promise((resolve) => setTimeout(resolve, 10000));
       }
    }
 };
