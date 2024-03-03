@@ -1,7 +1,7 @@
 import fs from 'fs';
 import inquirer from 'inquirer';
 import getFeed from './src/func/getFeed.js';
-import { loggerInfo, loggerSuccess } from './src/utils/logger.js';
+import { loggerFailed, loggerInfo, loggerSuccess } from './src/utils/logger.js';
 import replyingCast from './src/func/replyingCast.js';
 import getThread from './src/func/getThread.js';
 import delay from './src/utils/delay.js';
@@ -41,13 +41,18 @@ const processPerThread = async (
             }
          }
       }
-      const checkIfreply = listCast.map((cast) => {
-         cast.author.username === username;
-      });
-      if (checkIfreply.length == 0) {
+      console.log(listCast);
+      const filteredArray = listCast.filter(
+         (cast) => cast.author.username === username
+      );
+      if (filteredArray.length > 0) {
          loggerInfo(`Skipping Reply ${listCast[0].hash} because already reply`);
       } else {
-         await replyingCast(token, Fullhash);
+         try {
+            await replyingCast(token, Fullhash);
+         } catch (error) {
+            loggerFailed(`Failed replying ${Fullhash}, ${error.message}`);
+         }
          await delay(ms);
       }
    } catch (error) {
@@ -57,6 +62,7 @@ const processPerThread = async (
 (async () => {
    try {
       process.stdout.write('\x1Bc');
+
       const list = listed.map((item) => item.username);
       const { selected } = await inquirer.prompt({
          type: 'list',
@@ -91,7 +97,7 @@ const processPerThread = async (
          } else {
             await processPerThread(
                username,
-               listed[0].token,
+               token,
                id,
                id.substring(0, 10),
                items[key].cast.author.username
@@ -121,7 +127,7 @@ const processPerThread = async (
                const { username } = items[key].cast.author;
                await processPerThread(
                   username,
-                  listed[0].token,
+                  token,
                   id,
                   id.substring(0, 10),
                   items[key].cast.author.username
