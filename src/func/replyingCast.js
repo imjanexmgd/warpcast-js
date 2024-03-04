@@ -2,14 +2,6 @@ import axios from 'axios';
 import { loggerSuccess, loggerFailed } from '../utils/logger.js';
 const randomText = () => {
    try {
-      const rand = Math.floor(Math.random() * 2) + 1;
-      if (rand == 1) {
-         return `🍖 x ${Math.floor(Math.random() * (1000 - 10 + 1)) + 10}`;
-      } else {
-         return `🍖x${Math.floor(Math.random() * (1000 - 10 + 1)) + 10}`;
-      }
-      //    return '🍖'.repeat(Math.floor(Math.random() * 20) + 1);
-      // return `🍖x${Math.floor(Math.random() * (1000 - 10 + 1)) + 10}`;
       return `🍖 x ${Math.floor(Math.random() * (1000 - 10 + 1)) + 10}`;
    } catch (error) {
       throw error;
