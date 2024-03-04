@@ -141,7 +141,7 @@ const processPerThread = async (
 
          loggerSuccess(`Process done looping= ${totalLooping}`);
          await sendNotifTele(`Process done looping channel ${totalLooping}`);
-         delay(1800000);
+         await delay(1800000);
          if (totalLooping == 3) {
             break;
          }
