@@ -112,7 +112,6 @@ const processPerThread = async (
             }
             i++;
             loggerInfo('stopping thread');
-            console.log();
          }
 
          while (true) {
