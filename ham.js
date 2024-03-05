@@ -53,9 +53,7 @@ const processPerThread = async (
          try {
             loggerInfo(`Replying ${Fullhash}`);
             await replyingCast(token, Fullhash);
-            const ms = random.choice([
-               90000, 120000, 150000, 180000, 210000, 300000, 240000,
-            ]);
+            const ms = random.choice([150000, 180000, 210000, 300000, 240000]);
             await delay(ms);
          } catch (error) {
             loggerFailed(`Failed replying ${Fullhash}, ${error.message}`);
