@@ -1,14 +1,17 @@
 import fs from 'fs';
 import inquirer from 'inquirer';
+import random from 'random';
+
 import getFeed from './src/func/getFeed.js';
 import { loggerFailed, loggerInfo, loggerSuccess } from './src/utils/logger.js';
 import replyingCast from './src/func/replyingCast.js';
 import getThread from './src/func/getThread.js';
 import delay from './src/utils/delay.js';
 import sendNotifTele from './sendTelegram.js';
+
 const jsonList = fs.readFileSync('acc.json');
 const listed = JSON.parse(jsonList);
-const ms = 60000;
+// const ms = 60000;
 const processPerThread = async (
    username,
    token,
@@ -50,6 +53,9 @@ const processPerThread = async (
          try {
             loggerInfo(`Replying ${Fullhash}`);
             await replyingCast(token, Fullhash);
+            const ms = random.choice([
+               90000, 120000, 150000, 180000, 210000, 300000, 240000,
+            ]);
             await delay(ms);
          } catch (error) {
             loggerFailed(`Failed replying ${Fullhash}, ${error.message}`);
@@ -62,7 +68,6 @@ const processPerThread = async (
 (async () => {
    try {
       process.stdout.write('\x1Bc');
-
       const list = listed.map((item) => item.username);
       const { selected } = await inquirer.prompt({
          type: 'list',
@@ -107,10 +112,14 @@ const processPerThread = async (
             }
             i++;
             loggerInfo('stopping thread');
+            console.log();
          }
+
          while (true) {
             i = 1;
-            loggerInfo('Starting fetch again');
+            process.stdout.write('\x1Bc');
+            loggerInfo('Starting fetch again-onichan----');
+            console.log();
             feed = await getFeed(listed[0].token, timestamp, excludeitem);
             if (feed.result.items.length == 0) {
                console.log('no feed');
@@ -141,7 +150,7 @@ const processPerThread = async (
 
          loggerSuccess(`Process done looping= ${totalLooping}`);
          await sendNotifTele(`Process done looping channel ${totalLooping}`);
-         await delay(1800000);
+         await delay(2700000);
          if (totalLooping == 3) {
             break;
          }

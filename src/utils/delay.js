@@ -16,7 +16,7 @@ export const loadingAnimation = (totaltime) => {
          )
       );
       frameIndex = (frameIndex + 1) % frameLoading.length;
-   }, 100);
+   }, 200);
 };
 const delay = async (ms) => {
    let remainingSeconds = ms / 1000;

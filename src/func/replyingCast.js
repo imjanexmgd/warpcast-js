@@ -2,7 +2,7 @@ import axios from 'axios';
 import { loggerSuccess, loggerFailed } from '../utils/logger.js';
 const randomText = () => {
    try {
-      return `🍖 x ${Math.floor(Math.random() * (1000 - 10 + 1)) + 10}`;
+      return `🍖 x ${Math.floor(Math.random() * (500 - 10 + 1)) + 10}`;
    } catch (error) {
       throw error;
    }
