@@ -11,7 +11,7 @@ export const loggerSuccess = (msg) => {
             second: '2-digit',
          })
       );
-      const formattedMsg = chalk.green(`[🗸] ${msg}`);
+      const formattedMsg = chalk.green(`${msg}`);
       console.log(`[${timeString}] : ${formattedMsg}`);
    } catch (error) {
       console.log(error + 'failed logger success');
@@ -28,7 +28,7 @@ export const loggerFailed = (msg) => {
             second: '2-digit',
          })
       );
-      const formattedMsg = chalk.red(`[X] ${msg}`);
+      const formattedMsg = chalk.rgb(201, 29, 34)(`${msg}`);
       console.log(`[${timeString}] : ${formattedMsg}`);
    } catch (error) {
       console.log(error + 'failed logger success');
@@ -45,7 +45,7 @@ export const loggerInfo = (msg) => {
             second: '2-digit',
          })
       );
-      const formattedMsg = chalk.cyan(`[!] ${msg}`);
+      const formattedMsg = chalk.rgb(255, 102, 179)(`${msg}`);
       console.log(`[${timeString}] : ${formattedMsg}`);
    } catch (error) {
       console.log(error + 'failed logger info');
