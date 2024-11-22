@@ -46,7 +46,20 @@ import deleteCast from './src/func/deleteCast.js';
 
       break;
     }
+    const filteredMessages = listCasts.filter((item) => {
+      const message = item.text.toLowerCase();
+      return message.startsWith('claiming my @socialtoken airdrop');
+    });
+    // console.log(filteredMessages);
+    for await (const [index, item] of filteredMessages.entries()) {
+      const num = index + 1;
+      loggerInfo(`PROCESSING ${num} / ${filteredMessages.length}`);
+      loggerInfo(`cast hash ${item.hash}`);
+      loggerInfo(`deleting ${item.hash}`);
+      await deleteCast(token, item.hash);
+    }
 
+    return;
     for await (const [index, item] of listCasts.entries()) {
       const num = index + 1;
       loggerInfo(`PROCESSING ${num} / ${listCasts.length}`);
