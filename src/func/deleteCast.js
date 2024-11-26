@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { loggerFailed, loggerSuccess } from '../utils/logger.js';
-export default async (token, castHash) => {
+export default async (token, castHash, idempotencyKey) => {
   try {
     const { data } = await axios.delete(
       'https://client.warpcast.com/v2/casts',
@@ -11,9 +11,9 @@ export default async (token, castHash) => {
           authorization: token,
           'cache-control': 'no-cache',
           'content-type': 'application/json; charset=utf-8',
-          'fc-amplitude-device-id': 'uZ8eElhFd3CJoaPPWYiZHC',
-          'fc-amplitude-session-id': '1732286726426',
-          'idempotency-key': '46e78fbe-1ebf-5801-941d-e59a2fee39e1',
+          // 'fc-amplitude-device-id': 'uZ8eElhFd3CJoaPPWYiZHC',
+          // 'fc-amplitude-session-id': '1732286726426',
+          'idempotency-key': idempotencyKey,
           origin: 'https://warpcast.com',
           pragma: 'no-cache',
           priority: 'u=1, i',

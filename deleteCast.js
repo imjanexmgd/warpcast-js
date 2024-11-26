@@ -6,6 +6,7 @@ import { loggerInfo, loggerSuccess } from './src/utils/logger.js';
 import random from 'random';
 import delay from './src/utils/delay.js';
 import deleteCast from './src/func/deleteCast.js';
+import { randomUUID } from 'crypto';
 (async () => {
   try {
     process.stdout.write('\x1Bc');
@@ -22,6 +23,8 @@ import deleteCast from './src/func/deleteCast.js';
     const { token, username } = selectedUser;
     process.stdout.write('\x1Bc');
     console.log(`AUTO Delete cast`);
+    console.log(`Processing ${username}`);
+
     const me = await getMe(token);
     let listCasts = [];
     let cast;
@@ -46,19 +49,33 @@ import deleteCast from './src/func/deleteCast.js';
 
       break;
     }
-    const filteredMessages = listCasts.filter((item) => {
-      const message = item.text.toLowerCase();
-      return message.startsWith('claiming my @socialtoken airdrop');
-    });
+    // return;
+    loggerInfo(`Total Cast ${listCasts.length}`);
+    // const filteredMessages = listCasts.filter((item) => {
+    //   const message = item.text.toLowerCase();
+    //   return message.startsWith('claiming my @socialtoken airdrop');
+    // });
     // console.log(filteredMessages);
-    for await (const [index, item] of filteredMessages.entries()) {
+    // for await (const [index, item] of filteredMessages.entries()) {
+    //   const num = index + 1;
+    //   loggerInfo(`PROCESSING ${num} / ${filteredMessages.length}`);
+    //   loggerInfo(`cast hash ${item.hash}`);
+    //   loggerInfo(`deleting ${item.hash}`);
+    //   await deleteCast(token, item.hash);
+    // }
+    for await (const [index, item] of listCasts.entries()) {
       const num = index + 1;
-      loggerInfo(`PROCESSING ${num} / ${filteredMessages.length}`);
+      const idempotencyKey = randomUUID();
+      loggerInfo(`PROCESSING ${num} / ${listCasts.length}`);
       loggerInfo(`cast hash ${item.hash}`);
+      loggerInfo(`cast text : ${item.text}`);
       loggerInfo(`deleting ${item.hash}`);
-      await deleteCast(token, item.hash);
+      await deleteCast(token, item.hash, idempotencyKey);
+      loggerSuccess(`Success deleting cast ${item.hash}`);
+      const int = random.integer(5, 9);
+      const ms = int * 1000;
+      await delay(ms);
     }
-
     return;
     for await (const [index, item] of listCasts.entries()) {
       const num = index + 1;
