@@ -2,7 +2,7 @@ import getMe from './src/func/getMe.js';
 import inquirer from 'inquirer';
 import fs from 'fs';
 import getAllProfileCast from './src/func/getAllProfileCast.js';
-import { loggerInfo, loggerSuccess } from './src/utils/logger.js';
+import { loggerFailed, loggerInfo, loggerSuccess } from './src/utils/logger.js';
 import random from 'random';
 import delay from './src/utils/delay.js';
 import deleteCast from './src/func/deleteCast.js';
@@ -70,7 +70,11 @@ import { randomUUID } from 'crypto';
       loggerInfo(`cast hash ${item.hash}`);
       loggerInfo(`cast text : ${item.text}`);
       loggerInfo(`deleting ${item.hash}`);
-      await deleteCast(token, item.hash, idempotencyKey);
+      try {
+        await deleteCast(token, item.hash, idempotencyKey);
+      } catch (error) {
+        loggerFailed(error.response.data.errors[0].message || 'unkown error');
+      }
       loggerSuccess(`Success deleting cast ${item.hash}`);
       const int = random.integer(5, 9);
       const ms = int * 1000;

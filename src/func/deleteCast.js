@@ -41,11 +41,8 @@ export default async (token, castHash, idempotencyKey) => {
     }
     return data;
   } catch (error) {
-    loggerFailed('failed deleting data');
-    console.log(error);
-    console.log(error.response.data);
-
-    loggerFailed(error.response.data.errors.message || 'unkown error');
+    loggerFailed('failed deleting cast');
+    // loggerFailed(error.response.data.errors[0].message || 'unkown error');
     throw error;
   }
 };
